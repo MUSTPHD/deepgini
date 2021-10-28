@@ -8,21 +8,24 @@ https://arxiv.org/pdf/1603.05027.pdf
 """
 
 from __future__ import print_function
-import keras
-from keras.layers import Dense, Conv2D, BatchNormalization, Activation
-from keras.layers import AveragePooling2D, Input, Flatten
-from keras.optimizers import Adam
-from keras.callbacks import ModelCheckpoint, LearningRateScheduler
-from keras.callbacks import ReduceLROnPlateau
-from keras.preprocessing.image import ImageDataGenerator
-from keras.regularizers import l2
-from keras import backend as K
-from keras.models import Model
-from keras.datasets import cifar10
+import tensorflow.keras as keras
+from tensorflow.keras.layers import Dense, Conv2D, BatchNormalization, Activation
+from tensorflow.keras.layers import AveragePooling2D, Input, Flatten
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.callbacks import ModelCheckpoint, LearningRateScheduler
+from tensorflow.keras.callbacks import ReduceLROnPlateau
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.regularizers import l2
+from tensorflow.keras import backend as K
+from tensorflow.keras.models import Model
+from tensorflow.keras.datasets import cifar10
 import numpy as np
 import os
 import pandas as pd
+import tensorflow as tf
 
+os.environ["CUDA_VISIBLE_DEVICES"]="3,4"
+os.environ['TF_XLA_FLAGS'] = '--tf_xla_enable_xla_devices'
 # Training parameters
 batch_size = 32  # orig paper trained all networks with batch_size=128
 epochs = 200
@@ -317,30 +320,39 @@ def resnet_v2(input_shape, depth, num_classes=10):
     model = Model(inputs=inputs, outputs=outputs)
     return model
 
+# Create a MirroredStrategy.
+strategy = tf.distribute.MirroredStrategy()
+print('Number of devices: {}'.format(strategy.num_replicas_in_sync))
 
-if version == 2:
-    model = resnet_v2(input_shape=input_shape, depth=depth)
-else:
-    model = resnet_v1(input_shape=input_shape, depth=depth)
+# multiple gpu support
+with strategy.scope():
+    if version == 2:
+        model = resnet_v2(input_shape=input_shape, depth=depth)
+    else:
+        model = resnet_v1(input_shape=input_shape, depth=depth)
 
-model.compile(loss='categorical_crossentropy',
-              optimizer=Adam(lr=lr_schedule(0)),
-              metrics=['accuracy'])
-model.summary()
-print(model_type)
+    model.compile(loss='categorical_crossentropy',
+                optimizer=Adam(lr=lr_schedule(0)),
+                metrics=['accuracy'])
+    model.summary()
+    print(model_type)
 
-# Prepare model model saving directory.
-save_dir = os.path.join(os.getcwd(), 'model')
-model_name = 'cifar10_%s_model.{epoch:03d}.h5' % model_type
-if not os.path.isdir(save_dir):
-    os.makedirs(save_dir)
-filepath = os.path.join(save_dir, model_name)
+    # Prepare model model saving directory.
+    save_dir = os.path.join(os.getcwd(), 'model')
+    # model_name = 'cifar10_%s_model.{epoch:03d}.h5' % model_type
+    model_name = 'cifar10_%s_model.h5' % model_type
+    if not os.path.isdir(save_dir):
+        os.makedirs(save_dir)
+    filepath = os.path.join(save_dir, model_name)
+
+    if os.path.exists(filepath):
+        model.load_weights(filepath)
 
 # Prepare callbacks for model saving and for learning rate adjustment.
 checkpoint = ModelCheckpoint(filepath=filepath,
-                             monitor='val_acc',
+                             monitor='val_accuracy',
                              verbose=1,
-                             save_best_only=True)
+                             save_best_only=True, mode='max')
 
 lr_scheduler = LearningRateScheduler(lr_schedule)
 

@@ -1,17 +1,17 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
-import keras
-from keras import Model,Input
-from keras.models import load_model
-from keras.layers import Activation,Flatten
+import tensorflow.keras
+from tensorflow.keras import Model,Input
+from tensorflow.keras.models import load_model
+from tensorflow.keras.layers import Activation,Flatten
 import math
 import numpy as np
 import pandas as pd
 import foolbox
 from tqdm import tqdm
-from keras.datasets import mnist
-from keras.datasets import cifar10
-from keras.datasets import cifar100
+from tensorflow.keras.datasets import mnist
+from tensorflow.keras.datasets import cifar10
+from tensorflow.keras.datasets import cifar100
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import roc_auc_score
 import scipy
@@ -19,13 +19,16 @@ import sys,os
 import SVNH_DatasetUtil
 import itertools
 sys.path.append('./fashion-mnist/utils')
-import mnist_reader
 import warnings
 warnings.filterwarnings("ignore")
 import multiprocessing
 
+os.environ["CUDA_VISIBLE_DEVICES"]="2"
+import tensorflow as tf
+tf.compat.v1.disable_eager_execution()
+
 def adv_func(x,y,model_path='./model/model_mnist.hdf5',dataset='mnist',attack='fgsm'):
-    keras.backend.set_learning_phase(0)
+    tensorflow.keras.backend.set_learning_phase(0)
     model=load_model(model_path)
     foolmodel=foolbox.models.KerasModel(model,bounds=(0,1),preprocessing=(0,1))
     if attack=='cw':
@@ -91,7 +94,7 @@ def generate_cifar_sample(label,attack):
 
     image_org=X_test[Y_test==label]
 
-    adv=adv_func(image_org,label,model_path='./model/model_cifar10.h5',dataset='cifar10',attack=attack)
+    adv=adv_func(image_org,label,model_path='./model/cifar10_ResNet20v1_model.h5',dataset='cifar10',attack=attack)
     return adv
 
 def generate_cifar100_sample(label,attack):
@@ -109,6 +112,7 @@ def generate_cifar100_sample(label,attack):
     return adv
 
 def generate_fashion_sample(label,attack):
+    import mnist_reader
     path='./fashion-mnist/data/fashion'
     X_train, Y_train = mnist_reader.load_mnist(path, kind='train')
     X_test, Y_test = mnist_reader.load_mnist(path, kind='t10k')
@@ -138,8 +142,8 @@ def generate_adv_sample(dataset,attack):
         sample_func=generate_mnist_sample
     elif dataset=='svhn':
         sample_func=generate_svhn_sample
-    elif dataset=='fashion':
-        sample_func=generate_fashion_sample
+    # elif dataset=='fashion':
+    #     sample_func=generate_fashion_sample
     elif dataset=='cifar10':
         sample_func=generate_cifar_sample
     elif dataset=='cifar20':
@@ -166,8 +170,11 @@ if __name__=='__main__':
     '''
     data_lst=['svhn','fashion','cifar10','mnist']
     attack_lst=['cw','fgsm','bim','jsma']
-    pool = multiprocessing.Pool(processes=8)
-    for dataset,attack in (itertools.product(data_lst,attack_lst)):
-        pool.apply_async(generate_adv_sample, (dataset,attack))
-    pool.close()
-    pool.join()
+
+    generate_adv_sample('cifar10', 'cw')
+
+    # pool = multiprocessing.Pool(processes=8)
+    # for dataset,attack in (itertools.product(data_lst,attack_lst)):
+    #     pool.apply_async(generate_adv_sample, (dataset,attack))
+    # pool.close()
+    # pool.join()

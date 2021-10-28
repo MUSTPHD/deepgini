@@ -3,9 +3,9 @@
 
 import numpy as np
 import pandas as pd
-from keras import Model
+from tensorflow.keras import Model
 from tqdm import tqdm
-from keras.models import load_model
+from tensorflow.keras.models import load_model
 from scipy import stats
 from functools import reduce
 

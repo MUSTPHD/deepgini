@@ -3,11 +3,16 @@
 
 import pandas as pd
 import numpy as np
-from keras.datasets import mnist,cifar10,cifar100
-from keras.models import load_model
+from tensorflow.keras.datasets import mnist,cifar10,cifar100
+from tensorflow.keras.models import load_model
 import metrics
 import SVNH_DatasetUtil
 import time
+import os
+
+os.environ["CUDA_VISIBLE_DEVICES"]="2"
+
+
 
 def gen_data(use_adv=True,deepxplore=False):
     (X_train, Y_train), (X_test, Y_test) = cifar10.load_data()  # 32*32
@@ -17,7 +22,8 @@ def gen_data(use_adv=True,deepxplore=False):
     X_test /= 255
     Y_train=Y_train.reshape(-1)
     Y_test=Y_test.reshape(-1)
-    model_path='./model/model_cifar10.h5'
+    # model_path='./model/model_cifar10.h5'
+    model_path = './model/cifar10_ResNet20v1_model.h5'
     if use_adv:
         attack_lst=['cw','fgsm','jsma','bim']
         adv_image_all=[]
