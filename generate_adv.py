@@ -168,12 +168,16 @@ if __name__=='__main__':
     mnist svhn fashion cifar10 cifar20
     cw fgsm bim jsma
     '''
-    data_lst=['svhn','fashion','cifar10','mnist']
+    # data_lst=['svhn','fashion','cifar10','mnist']
+    data_lst=['cifar10']
     attack_lst=['cw','fgsm','bim','jsma']
 
-    generate_adv_sample('cifar10', 'cw')
+    # generate_adv_sample('cifar10', 'cw')
+    # generate_adv_sample('cifar10', 'fgsm')
+    # generate_adv_sample('cifar10', 'bim')
+    generate_adv_sample('cifar10', 'jsma')
 
-    # pool = multiprocessing.Pool(processes=8)
+    # pool = multiprocessing.Pool(processes=4)
     # for dataset,attack in (itertools.product(data_lst,attack_lst)):
     #     pool.apply_async(generate_adv_sample, (dataset,attack))
     # pool.close()
