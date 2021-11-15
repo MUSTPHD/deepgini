@@ -23,7 +23,7 @@ import warnings
 warnings.filterwarnings("ignore")
 import multiprocessing
 
-os.environ["CUDA_VISIBLE_DEVICES"]="2"
+os.environ["CUDA_VISIBLE_DEVICES"]="1"
 import tensorflow as tf
 tf.compat.v1.disable_eager_execution()
 
@@ -33,16 +33,16 @@ def adv_func(x,y,model_path='./model/model_mnist.hdf5',dataset='mnist',attack='f
     foolmodel=foolbox.models.KerasModel(model,bounds=(0,1),preprocessing=(0,1))
     if attack=='cw':
         #attack=foolbox.attacks.IterativeGradientAttack(foolmodel)
-        attack=foolbox.attacks.L2BasicIterativeAttack(foolmodel)
+        attack_func=foolbox.attacks.L2BasicIterativeAttack(foolmodel)
     elif attack=='fgsm':
         # FGSM
-        attack=foolbox.attacks.GradientSignAttack(foolmodel)
+        attack_func=foolbox.attacks.GradientSignAttack(foolmodel)
     elif attack=='bim':
         # BIM
-        attack=foolbox.attacks.L1BasicIterativeAttack(foolmodel)
+        attack_func=foolbox.attacks.L1BasicIterativeAttack(foolmodel)
     elif attack=='jsma':
         # JSMA
-        attack=foolbox.attacks.SaliencyMapAttack(foolmodel)
+        attack_func=foolbox.attacks.SaliencyMapAttack(foolmodel)
         # CW
         #attack=foolbox.attacks.DeepFoolL2Attack(foolmodel)
     result=[]
@@ -57,18 +57,34 @@ def adv_func(x,y,model_path='./model/model_mnist.hdf5',dataset='mnist',attack='f
             #adv=attack(image.reshape(28,28,-1),label=y,steps=1000,subsample=10)
             #adv=attack(image.reshape(w,h,-1),y,epsilons=[0.01,0.1],steps=10)
             if attack!='fgsm':
-                adv=attack(image.reshape(w,h,-1),y)
-                adv=attack(image.reshape(w,h,-1),y)
-                adv=attack(image.reshape(w,h,-1),y)
+                img = image.reshape(w, h, -1)
+                # from PIL import Image
+                # im = Image.fromarray(img * 255)
+                # im.save("img.jpeg")
+                import imageio
+                # imageio.imwrite('outfile.jpg', img)
+
+
+
+                # img = image.reshape(-1, w, h)
+                img = np.expand_dims(img, axis=0)
+                adv=attack_func(img, np.array([y]))
+
+                adv = adv[0]
+                # imageio.imwrite('adv.jpg', adv)
+
+                # adv=attack_func(image.reshape(w,h,-1),y)
+                # adv=attack_func(image.reshape(w,h,-1),y)
             else:
-                adv=attack(image.reshape(w,h,-1),y,[0.01,0.1])
+                adv=attack_func(image.reshape(w,h,-1),y,[0.01,0.1])
 
             if isinstance(adv,np.ndarray):
                 result.append(adv)
             else:
                 print('adv fail')
-        except:
-            pass
+        except Exception as e:
+            print(e)
+            print('---')
     return np.array(result)
 
 
@@ -169,7 +185,7 @@ if __name__=='__main__':
     cw fgsm bim jsma
     '''
     # data_lst=['svhn','fashion','cifar10','mnist']
-    data_lst=['cifar10']
+    data_lst=['mnist']
     attack_lst=['cw','fgsm','bim','jsma']
 
     # generate_adv_sample('cifar10', 'cw')
@@ -178,12 +194,12 @@ if __name__=='__main__':
     # generate_adv_sample('cifar10', 'jsma')
 
 
-    generate_adv_sample('mnist', 'cw')
-    generate_adv_sample('mnist', 'fgsm')
-    generate_adv_sample('mnist', 'bim')
-    generate_adv_sample('mnist', 'jsma')
-    # pool = multiprocessing.Pool(processes=4)
-    # for dataset,attack in (itertools.product(data_lst,attack_lst)):
-    #     pool.apply_async(generate_adv_sample, (dataset,attack))
-    # pool.close()
-    # pool.join()
+    # generate_adv_sample('mnist', 'cw')
+    # generate_adv_sample('mnist', 'fgsm')
+    # generate_adv_sample('mnist', 'bim')
+    # generate_adv_sample('mnist', 'jsma')
+    pool = multiprocessing.Pool(processes=4)
+    for dataset,attack in (itertools.product(data_lst,attack_lst)):
+        pool.apply_async(generate_adv_sample, (dataset,attack))
+    pool.close()
+    pool.join()
