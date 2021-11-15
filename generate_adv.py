@@ -188,18 +188,18 @@ if __name__=='__main__':
     data_lst=['mnist']
     attack_lst=['cw','fgsm','bim','jsma']
 
-    # generate_adv_sample('cifar10', 'cw')
-    # generate_adv_sample('cifar10', 'fgsm')
+    generate_adv_sample('cifar10', 'cw')
+    generate_adv_sample('cifar10', 'fgsm')
     # generate_adv_sample('cifar10', 'bim')
-    # generate_adv_sample('cifar10', 'jsma')
+    generate_adv_sample('cifar10', 'jsma')
 
 
     # generate_adv_sample('mnist', 'cw')
     # generate_adv_sample('mnist', 'fgsm')
     # generate_adv_sample('mnist', 'bim')
     # generate_adv_sample('mnist', 'jsma')
-    pool = multiprocessing.Pool(processes=4)
-    for dataset,attack in (itertools.product(data_lst,attack_lst)):
-        pool.apply_async(generate_adv_sample, (dataset,attack))
-    pool.close()
-    pool.join()
+    # pool = multiprocessing.Pool(processes=4)
+    # for dataset,attack in (itertools.product(data_lst,attack_lst)):
+    #     pool.apply_async(generate_adv_sample, (dataset,attack))
+    # pool.close()
+    # pool.join()
