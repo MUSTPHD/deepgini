@@ -1,3 +1,8 @@
+https://github.com/tensorflow/docs-l10n/blob/master/site/zh-cn/tutorials/generative/cvae.ipynb
+https://github.com/keras-team/keras-io/blob/master/examples/generative/vae.py
+
+
+
 # DeepGINI
 
 DeepGINI is a test data sorting technology for deep learning. This warehouse is the experimental code of DeepGINI.
