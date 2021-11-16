@@ -16,7 +16,7 @@ from tensorflow import keras
 from tensorflow.keras import layers
 import os
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '5'
+os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 
 """
 ## Create a sampling layer
@@ -60,7 +60,11 @@ x = layers.Dense(7 * 7 * 64, activation="relu")(latent_inputs)
 x = layers.Reshape((7, 7, 64))(x)
 x = layers.Conv2DTranspose(64, 3, activation="relu", strides=2, padding="same")(x)
 x = layers.Conv2DTranspose(32, 3, activation="relu", strides=2, padding="same")(x)
-decoder_outputs = layers.Conv2DTranspose(1, 3, activation="softmax", padding="same")(x)
+# decoder_outputs = layers.Conv2DTranspose(1, 3, activation="softmax", padding="same")(x)
+# decoder_outputs = layers.Conv2DTranspose(1, 3, activation="sigmoid", padding="same")(x)
+
+# no need activation here
+decoder_outputs = layers.Conv2DTranspose(1, 3, padding="same")(x)
 decoder = keras.Model(latent_inputs, decoder_outputs, name="decoder")
 decoder.summary()
 
@@ -89,8 +93,12 @@ class VAE(keras.Model):
         ]
 
     def train_step(self, data):
+        
         with tf.GradientTape() as tape:
             z_mean, z_log_var, z = self.encoder(data)
+
+            tf.print('---', data[0].shape, np.count_nonzero(np.isnan(data[0].numpy())), z.get_shape(), z)
+
             reconstruction = self.decoder(z)
             
             # print(data, reconstruction, keras.losses.binary_crossentropy(data, reconstruction))
@@ -98,6 +106,8 @@ class VAE(keras.Model):
             reconstruction_loss = tf.reduce_mean(
                 tf.reduce_sum(
                     keras.losses.sparse_categorical_crossentropy(data, reconstruction), axis=(1, 2)
+                    # keras.losses.binary_crossentropy(data, reconstruction), axis=(1, 2)
+                     
                 )
             )
             kl_loss = -0.5 * (1 + z_log_var - tf.square(z_mean) - tf.exp(z_log_var))
@@ -111,7 +121,7 @@ class VAE(keras.Model):
         return {
             "loss": self.total_loss_tracker.result(),
             "reconstruction_loss": self.reconstruction_loss_tracker.result(),
-            "kl_loss": self.kl_loss_tracker.result(),
+            "kl_loss--": self.kl_loss_tracker.result(),
         }
 
 
@@ -123,10 +133,18 @@ def train_VAE():
 
     (x_train, _), (x_test, _) = keras.datasets.mnist.load_data()
     mnist_digits = np.concatenate([x_train, x_test], axis=0)
-    mnist_digits = np.expand_dims(mnist_digits, -1).astype("float32") / 255
+    mnist_digits = np.expand_dims(mnist_digits, -1).astype("float32") / 255.0
 
     vae = VAE(encoder, decoder)
-    vae.compile(optimizer=keras.optimizers.Adam())
+    vae.run_eagerly = True
+    vae.compile(optimizer=keras.optimizers.Adam(), run_eagerly=True)
+
+    # iterator = iter(mnist_digits)
+
+    # z_mean, z_log_var, z = vae.encoder(next(iterator))
+    # reconstruction = vae.decoder(z)
+    # print('----')
+    print(np.count_nonzero(np.isnan(mnist_digits)))
     vae.fit(mnist_digits, epochs=30, batch_size=128)
 
 
