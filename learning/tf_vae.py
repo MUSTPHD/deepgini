@@ -11,7 +11,11 @@ import tqdm
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 
-(train_images, _), (test_images, _) = tf.keras.datasets.mnist.load_data()
+train_size = 60000
+batch_size = 32
+test_size = 10000
+
+
 
 
 def preprocess_images(images):
@@ -19,18 +23,21 @@ def preprocess_images(images):
     return np.where(images > .5, 1.0, 0.0).astype('float32')
 
 
-train_images = preprocess_images(train_images)
-test_images = preprocess_images(test_images)
+def load_data(train=True, test=False):
+    (train_images, _), (test_images, _) = tf.keras.datasets.mnist.load_data()
+    if train:
+        train_images = preprocess_images(train_images)
+        train_dataset = tf.data.Dataset.from_tensor_slices(train_images).shuffle(train_size).batch(batch_size)
+    if test:
+        test_images = preprocess_images(test_images)
+        test_dataset = tf.data.Dataset.from_tensor_slices(test_images).shuffle(test_size).batch(batch_size)
+    return {
+        "train": train_dataset if train else None, 
+        "test": test_dataset if test else None
+    }
 
-train_size = 60000
-batch_size = 32
-test_size = 10000
 
-train_dataset = tf.data.Dataset.from_tensor_slices(
-    train_images).shuffle(train_size).batch(batch_size)
-test_dataset = tf.data.Dataset.from_tensor_slices(
-    test_images).shuffle(test_size).batch(batch_size)
-
+print('---', 'load data success')
 
 class CVAE(tf.keras.Model):
     """Convolutional variational autoencoder."""
@@ -118,9 +125,6 @@ class CVAE(tf.keras.Model):
         }
 
 
-optimizer = tf.keras.optimizers.Adam(1e-4)
-
-
 def log_normal_pdf(sample, mean, logvar, raxis=1):
     log2pi = tf.math.log(2. * np.pi)
     return tf.reduce_sum(
@@ -160,8 +164,10 @@ def log_normal_pdf(sample, mean, logvar, raxis=1):
 
 
 if __name__ == '__main__':
+    optimizer = tf.keras.optimizers.Adam(1e-4)
     model = CVAE()
     model.load_weights('./vae_model/vae')
+    train_dataset = load_data()["train"]
     iterator = iter(train_dataset)
     # ckpt = tf.train.Checkpoint(
     #     step=tf.Variable(1), optimizer=optimizer, net=model, iterator=iterator

@@ -1,10 +1,14 @@
-import matplotlib as plt
+import matplotlib.pyplot as plt
 import numpy as np
-from tensorflow.keras.models import Model,load_model
+from tensorflow.keras.models import Model, load_model
 import os
-from tf_vae import CVAE
+from tf_vae import CVAE, load_data
+import tensorflow as tf
+import tensorflow_probability as tfp
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '6'
+
+
 def plot_latent_space(vae, n=30, figsize=15):
     # display a n*n 2D manifold of digits
     digit_size = 28
@@ -21,8 +25,8 @@ def plot_latent_space(vae, n=30, figsize=15):
             x_decoded = vae.decoder.predict(z_sample)
             digit = x_decoded[0].reshape(digit_size, digit_size)
             figure[
-                i * digit_size : (i + 1) * digit_size,
-                j * digit_size : (j + 1) * digit_size,
+                i * digit_size: (i + 1) * digit_size,
+                j * digit_size: (j + 1) * digit_size,
             ] = digit
 
     plt.figure(figsize=(figsize, figsize))
@@ -56,7 +60,45 @@ def generate_and_save_images(model, epoch, test_sample):
 
     # tight_layout minimizes the overlap between 2 sub-plots
     plt.savefig('image_at_epoch_{:04d}.png'.format(epoch))
-    plt.show()
+    # plt.show()
+
+
+def plot_latent_images(model, n, digit_size=28):
+    """Plots n x n digit images decoded from the latent space."""
+
+    norm = tfp.distributions.Normal(0, 1)
+    grid_x = norm.quantile(np.linspace(0.05, 0.95, n))
+    grid_y = norm.quantile(np.linspace(0.05, 0.95, n))
+    image_width = digit_size*n
+    image_height = image_width
+    image = np.zeros((image_height, image_width))
+
+    for i, yi in enumerate(grid_x):
+        for j, xi in enumerate(grid_y):
+            z = np.array([[xi, yi]])
+            x_decoded = model.sample(z)
+            digit = tf.reshape(x_decoded[0], (digit_size, digit_size))
+            image[i * digit_size: (i + 1) * digit_size,
+                  j * digit_size: (j + 1) * digit_size] = digit.numpy()
+
+    plt.figure(figsize=(10, 10))
+    plt.imshow(image, cmap='Greys_r')
+    plt.axis('Off')
+    # plt.show()
+    plt.savefig('hidden_space.png')
+
 
 vae = CVAE()
 vae.load_weights('./vae_model/vae')
+# from tf_vae import test_dataset
+# print(test_dataset)
+# print(test_dataset.take(1))
+
+
+test_dataset = load_data(train=False, test=True)["test"]
+print('---', test_dataset.take(1))
+num_examples_to_generate = 16
+for test_batch in test_dataset.take(1):
+    test_sample = test_batch[0:num_examples_to_generate, :, :, :]
+generate_and_save_images(vae, 0, test_sample)
+plot_latent_images(vae, 20)
