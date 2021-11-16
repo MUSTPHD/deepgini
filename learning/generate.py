@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from tensorflow.keras.models import Model, load_model
+# from tensorflow.keras.models import Model, load_model
 import os
 from tf_vae import CVAE, load_data
 import tensorflow as tf
@@ -67,6 +67,7 @@ def plot_latent_images(model, n, digit_size=28):
     """Plots n x n digit images decoded from the latent space."""
 
     norm = tfp.distributions.Normal(0, 1)
+    # norm = tf.random.normal(shape=(0, 1))
     grid_x = norm.quantile(np.linspace(0.05, 0.95, n))
     grid_y = norm.quantile(np.linspace(0.05, 0.95, n))
     image_width = digit_size*n
