@@ -89,6 +89,20 @@ def plot_latent_images(model, n, digit_size=28):
     plt.savefig('hidden_space.png')
 
 
+def plot_label_clusters(vae, data, labels):
+    # display a 2D plot of the digit classes in the latent space
+    hidden_parameters = vae.encoder.predict(data)
+    z_mean, var = tf.split(hidden_parameters, num_or_size_splits=2, axis=1)
+
+    plt.figure(figsize=(12, 10))
+    plt.scatter(z_mean[:, 0], z_mean[:, 1], c=labels)
+    plt.colorbar()
+    plt.xlabel("z[0]")
+    plt.ylabel("z[1]")
+    # plt.show()
+    plt.savefig('label_cluster.png')
+
+
 vae = CVAE()
 vae.load_weights('./vae_model/vae')
 # from tf_vae import test_dataset
@@ -96,10 +110,14 @@ vae.load_weights('./vae_model/vae')
 # print(test_dataset.take(1))
 
 
-test_dataset = load_data(train=False, test=True)["test"]
-print('---', test_dataset.take(1))
+test_dataset = load_data(train=False, test=True)
+x_test, y_test = test_dataset['test'], test_dataset['y_test']
+
+print('---', x_test.take(1))
 num_examples_to_generate = 16
-for test_batch in test_dataset.take(1):
+for test_batch in x_test.take(1):
     test_sample = test_batch[0:num_examples_to_generate, :, :, :]
 generate_and_save_images(vae, 0, test_sample)
 plot_latent_images(vae, 20)
+
+plot_label_clusters(vae, x_test, y_test)

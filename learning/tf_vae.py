@@ -24,7 +24,7 @@ def preprocess_images(images):
 
 
 def load_data(train=True, test=False):
-    (train_images, _), (test_images, _) = tf.keras.datasets.mnist.load_data()
+    (train_images, y_train), (test_images, y_test) = tf.keras.datasets.mnist.load_data()
     if train:
         train_images = preprocess_images(train_images)
         train_dataset = tf.data.Dataset.from_tensor_slices(train_images).shuffle(train_size).batch(batch_size)
@@ -33,7 +33,9 @@ def load_data(train=True, test=False):
         test_dataset = tf.data.Dataset.from_tensor_slices(test_images).shuffle(test_size).batch(batch_size)
     return {
         "train": train_dataset if train else None, 
-        "test": test_dataset if test else None
+        "y_train": y_train if train else None,
+        "test": test_dataset if test else None,
+        "y_test": y_test if test else None
     }
 
 
@@ -183,7 +185,7 @@ if __name__ == '__main__':
         save_best_only=True,
         verbose=1)
 
-    epochs = 3
+    epochs = 10
 
 
     model.compile(optimizer=optimizer, run_eagerly=True)

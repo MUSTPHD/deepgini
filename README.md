@@ -1,5 +1,7 @@
 https://github.com/tensorflow/docs-l10n/blob/master/site/zh-cn/tutorials/generative/cvae.ipynb
 https://github.com/keras-team/keras-io/blob/master/examples/generative/vae.py
+https://keras.io/examples/generative/vae/
+
 
 tensorflow==2.2.0
 pip install tfp-nightly==0.11.0.dev20200716
