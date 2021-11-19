@@ -25,7 +25,7 @@ import os
 import tensorflow as tf
 
 
-os.environ["CUDA_VISIBLE_DEVICES"]="3,4"
+os.environ["CUDA_VISIBLE_DEVICES"]="1,2"
 os.environ['TF_XLA_FLAGS'] = '--tf_xla_enable_xla_devices'
 
 def model_mnist():

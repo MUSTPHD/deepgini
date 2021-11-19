@@ -7,6 +7,8 @@ from tensorflow.keras.datasets import mnist,cifar10,cifar100
 from tensorflow.keras.models import load_model
 import metrics
 import time
+import os
+os.environ['CUDA_VISIBLE_DEVICES'] = '1,2'
 
 def gen_data(use_adv=True,deepxplore=False):
     (X_train, Y_train), (X_test, Y_test) = mnist.load_data()  # 28*28
