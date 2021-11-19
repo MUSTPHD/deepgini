@@ -84,7 +84,6 @@ def adv_func(x,y,model_path='./model/model_mnist.hdf5',dataset='mnist',attack='f
                 print('adv fail')
         except Exception as e:
             print(e)
-            print('---')
     return np.array(result)
 
 
@@ -195,9 +194,9 @@ if __name__=='__main__':
 
 
     # generate_adv_sample('mnist', 'cw')
-    # generate_adv_sample('mnist', 'fgsm')
+    generate_adv_sample('mnist', 'fgsm')
     # generate_adv_sample('mnist', 'bim')
-    generate_adv_sample('mnist', 'jsma')
+    # generate_adv_sample('mnist', 'jsma')
     # pool = multiprocessing.Pool(processes=4)
     # for dataset,attack in (itertools.product(data_lst,attack_lst)):
     #     pool.apply_async(generate_adv_sample, (dataset,attack))

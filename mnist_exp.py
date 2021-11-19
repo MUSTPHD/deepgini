@@ -19,6 +19,7 @@ def gen_data(use_adv=True,deepxplore=False):
     model_path='./model/model_mnist.hdf5'
     if use_adv:
         attack_lst=['fgsm','jsma','bim','cw']
+        attack_lst=['jsma','bim','cw']
         adv_image_all=[]
         adv_label_all=[]
         for attack in attack_lst:
@@ -278,3 +279,6 @@ if __name__=='__main__':
     dic['mnist_adv_snac_std_0']=(start-end)
 
     print(dic)
+
+
+# {'mnist_nac_t_0': -16.287529468536377, 'mnist_adv_nac_t_0': -40.104525327682495, 'mnist_nac_t_0.75': -12.855152368545532, 'mnist_adv_nac_t_0.75': -44.695390939712524, 'mnist_ours': -1.0195002555847168, 'mnist_adv_ours': -2.595906972885132, 'mnist_tknc_k_1': -18.440149545669556, 'mnist_tknc_k_2': -15.049455165863037, 'mnist_tknc_k_3': -14.735110521316528, 'mnist_adv_tknc_k_1': -70.78050541877747, 'mnist_adv_tknc_k_2': -59.126999378204346, 'mnist_adv_tknc_k_3': -54.15341329574585, 'mnist_nbc_std_0.5': -29.539813995361328, 'mnist_nbc_std_1': -29.086140394210815, 'mnist_nbc_std_0': -33.23535990715027, 'mnist_adv_nbc_std_0.5': -64.28236150741577, 'mnist_adv_nbc_std_1': -60.84338617324829, 'mnist_adv_nbc_std_0': -82.47223234176636, 'mnist_snac_std_0.5': -28.5828800201416, 'mnist_snac_std_1': -27.237147092819214, 'mnist_snac_std_0': -28.553428411483765, 'mnist_adv_snac_std_0.5': -58.533217430114746, 'mnist_adv_snac_std_1': -56.78029537200928, 'mnist_adv_snac_std_0': -66.64217805862427}
