@@ -176,7 +176,7 @@ if __name__ == '__main__':
     optimizer = tf.keras.optimizers.Adam(1e-4)
     model = CVAE()
     weight_path = './vae_model/vae'
-    if os.path.exists(weight_path):
+    if os.path.exists('./vae_model'):
         model.load_weights(weight_path)
     train_dataset = load_data()["train"]
     iterator = iter(train_dataset)
