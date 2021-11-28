@@ -199,16 +199,20 @@ if __name__=='__main__':
     end=time.time()
     dic['mnist_ours']=(start-end)
 
+    start=time.time()
+    exp_deep_metric(use_adv=True)
+    end=time.time()
+    dic['mnist_adv_ours']=(start-end)
 
     start=time.time()
     exp_deep_L1(use_adv=False)
     end=time.time()
     dic['mnist_L1']=(start-end)
-
-    # start=time.time()
-    # exp_deep_metric(use_adv=True)
-    # end=time.time()
-    # dic['mnist_adv_ours']=(start-end)
+    
+    start=time.time()
+    exp_deep_L1(use_adv=True)
+    end=time.time()
+    dic['mnist_adv_L1']=(start-end)
 
     # start=time.time()
     # exp(coverage='tknc',use_adv=False,k=1)
