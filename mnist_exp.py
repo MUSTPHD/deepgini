@@ -8,7 +8,12 @@ from tensorflow.keras.models import load_model
 import metrics
 import time
 import os
-os.environ['CUDA_VISIBLE_DEVICES'] = '1,2'
+import tensorflow as tf
+# os.environ['CUDA_VISIBLE_DEVICES'] = '1,2'
+physical_devices = tf.config.list_physical_devices('GPU') 
+print('-----', len(physical_devices))
+for device in physical_devices:
+    tf.config.experimental.set_memory_growth(device, True)
 
 def gen_data(use_adv=True,deepxplore=False):
     (X_train, Y_train), (X_test, Y_test) = mnist.load_data()  # 28*28
@@ -127,7 +132,7 @@ def exp_nac(use_adv,t):
         dataset='mnist'
     df['rate']=rate
 
-    #df.to_csv('./output_mnist/{}_nac_t_{}.csv'.format(dataset,t))
+    df.to_csv('./output_mnist/{}_nac_t_{}.csv'.format(dataset,t))
 
 def exp_deep_metric(use_adv):
     input,layers,test,train,pred_test,true_test,pred_test_prob=gen_data(use_adv,deepxplore=False)
@@ -141,32 +146,48 @@ def exp_deep_metric(use_adv):
         dataset='mnist_adv'
     else:
         dataset='mnist'
-    #df.to_csv('./output_mnist/{}_deep_metric.csv'.format(dataset))
+    df.to_csv('./output_mnist/{}_deep_metric.csv'.format(dataset))
+
+
+def exp_deep_L1(use_adv):
+    input,layers,test,train,pred_test,true_test,pred_test_prob=gen_data(use_adv,deepxplore=False)
+    rank_lst=metrics.deep_L1(pred_test_prob)
+    df=pd.DataFrame([])
+    df['right']=(pred_test==true_test).astype('int')
+    df['cam']=0
+    df['cam'].loc[rank_lst]=list(range(1,len(rank_lst)+1))
+    df['rate']=0
+    if use_adv:
+        dataset='mnist_adv'
+    else:
+        dataset='mnist'
+    df.to_csv('./output_mnist/{}_deep_L1.csv'.format(dataset))
+
 
 if __name__=='__main__':
     pass
     dic={}
 
-    start=time.time()
-    exp_nac(use_adv=False,t=0)
-    end=time.time()
-    dic['mnist_nac_t_0']=(start-end)
+    # start=time.time()
+    # exp_nac(use_adv=False,t=0)
+    # end=time.time()
+    # dic['mnist_nac_t_0']=(start-end)
 
 
-    start=time.time()
-    exp_nac(use_adv=True,t=0)
-    end=time.time()
-    dic['mnist_adv_nac_t_0']=(start-end)
+    # start=time.time()
+    # exp_nac(use_adv=True,t=0)
+    # end=time.time()
+    # dic['mnist_adv_nac_t_0']=(start-end)
 
-    start=time.time()
-    exp_nac(use_adv=False,t=0.75)
-    end=time.time()
-    dic['mnist_nac_t_0.75']=(start-end)
+    # start=time.time()
+    # exp_nac(use_adv=False,t=0.75)
+    # end=time.time()
+    # dic['mnist_nac_t_0.75']=(start-end)
 
-    start=time.time()
-    exp_nac(use_adv=True,t=0.75)
-    end=time.time()
-    dic['mnist_adv_nac_t_0.75']=(start-end)
+    # start=time.time()
+    # exp_nac(use_adv=True,t=0.75)
+    # end=time.time()
+    # dic['mnist_adv_nac_t_0.75']=(start-end)
 
     #exp(coverage='kmnc',use_adv=False,k_bins=1000)
     #exp(coverage='kmnc',use_adv=False,k_bins=10000)
@@ -178,105 +199,111 @@ if __name__=='__main__':
     end=time.time()
     dic['mnist_ours']=(start-end)
 
-    start=time.time()
-    exp_deep_metric(use_adv=True)
-    end=time.time()
-    dic['mnist_adv_ours']=(start-end)
 
     start=time.time()
-    exp(coverage='tknc',use_adv=False,k=1)
+    exp_deep_L1(use_adv=False)
     end=time.time()
-    dic['mnist_tknc_k_1']=(start-end)
+    dic['mnist_L1']=(start-end)
 
-    start=time.time()
-    exp(coverage='tknc',use_adv=False,k=2)
-    end=time.time()
-    dic['mnist_tknc_k_2']=(start-end)
+    # start=time.time()
+    # exp_deep_metric(use_adv=True)
+    # end=time.time()
+    # dic['mnist_adv_ours']=(start-end)
 
-    start=time.time()
-    exp(coverage='tknc',use_adv=False,k=3)
-    end=time.time()
-    dic['mnist_tknc_k_3']=(start-end)
+    # start=time.time()
+    # exp(coverage='tknc',use_adv=False,k=1)
+    # end=time.time()
+    # dic['mnist_tknc_k_1']=(start-end)
 
-    start=time.time()
-    exp(coverage='tknc',use_adv=True,k=1)
-    end=time.time()
-    dic['mnist_adv_tknc_k_1']=(start-end)
+    # start=time.time()
+    # exp(coverage='tknc',use_adv=False,k=2)
+    # end=time.time()
+    # dic['mnist_tknc_k_2']=(start-end)
 
-    start=time.time()
-    exp(coverage='tknc',use_adv=True,k=2)
-    end=time.time()
-    dic['mnist_adv_tknc_k_2']=(start-end)
+    # start=time.time()
+    # exp(coverage='tknc',use_adv=False,k=3)
+    # end=time.time()
+    # dic['mnist_tknc_k_3']=(start-end)
 
-    start=time.time()
-    exp(coverage='tknc',use_adv=True,k=3)
-    end=time.time()
-    dic['mnist_adv_tknc_k_3']=(start-end)
+    # start=time.time()
+    # exp(coverage='tknc',use_adv=True,k=1)
+    # end=time.time()
+    # dic['mnist_adv_tknc_k_1']=(start-end)
 
-    start=time.time()
-    exp(coverage='nbc',use_adv=False,std=0.5)
-    end=time.time()
-    dic['mnist_nbc_std_0.5']=(start-end)
+    # start=time.time()
+    # exp(coverage='tknc',use_adv=True,k=2)
+    # end=time.time()
+    # dic['mnist_adv_tknc_k_2']=(start-end)
 
+    # start=time.time()
+    # exp(coverage='tknc',use_adv=True,k=3)
+    # end=time.time()
+    # dic['mnist_adv_tknc_k_3']=(start-end)
 
-    start=time.time()
-    exp(coverage='nbc',use_adv=False,std=1)
-    end=time.time()
-    dic['mnist_nbc_std_1']=(start-end)
-
-    start=time.time()
-    exp(coverage='nbc',use_adv=False,std=0)
-    end=time.time()
-    dic['mnist_nbc_std_0']=(start-end)
-
+    # start=time.time()
+    # exp(coverage='nbc',use_adv=False,std=0.5)
+    # end=time.time()
+    # dic['mnist_nbc_std_0.5']=(start-end)
 
 
-    start=time.time()
-    exp(coverage='nbc',use_adv=True,std=0.5)
-    end=time.time()
-    dic['mnist_adv_nbc_std_0.5']=(start-end)
+    # start=time.time()
+    # exp(coverage='nbc',use_adv=False,std=1)
+    # end=time.time()
+    # dic['mnist_nbc_std_1']=(start-end)
 
-    start=time.time()
-    exp(coverage='nbc',use_adv=True,std=1)
-    end=time.time()
-    dic['mnist_adv_nbc_std_1']=(start-end)
-
-    start=time.time()
-    exp(coverage='nbc',use_adv=True,std=0)
-    end=time.time()
-    dic['mnist_adv_nbc_std_0']=(start-end)
+    # start=time.time()
+    # exp(coverage='nbc',use_adv=False,std=0)
+    # end=time.time()
+    # dic['mnist_nbc_std_0']=(start-end)
 
 
-    start=time.time()
-    exp(coverage='snac',use_adv=False,std=0.5)
-    end=time.time()
-    dic['mnist_snac_std_0.5']=(start-end)
 
-    start=time.time()
-    exp(coverage='snac',use_adv=False,std=1)
-    end=time.time()
-    dic['mnist_snac_std_1']=(start-end)
+    # start=time.time()
+    # exp(coverage='nbc',use_adv=True,std=0.5)
+    # end=time.time()
+    # dic['mnist_adv_nbc_std_0.5']=(start-end)
 
-    start=time.time()
-    exp(coverage='snac',use_adv=False,std=0)
-    end=time.time()
-    dic['mnist_snac_std_0']=(start-end)
+    # start=time.time()
+    # exp(coverage='nbc',use_adv=True,std=1)
+    # end=time.time()
+    # dic['mnist_adv_nbc_std_1']=(start-end)
+
+    # start=time.time()
+    # exp(coverage='nbc',use_adv=True,std=0)
+    # end=time.time()
+    # dic['mnist_adv_nbc_std_0']=(start-end)
 
 
-    start=time.time()
-    exp(coverage='snac',use_adv=True,std=0.5)
-    end=time.time()
-    dic['mnist_adv_snac_std_0.5']=(start-end)
+    # start=time.time()
+    # exp(coverage='snac',use_adv=False,std=0.5)
+    # end=time.time()
+    # dic['mnist_snac_std_0.5']=(start-end)
 
-    start=time.time()
-    exp(coverage='snac',use_adv=True,std=1)
-    end=time.time()
-    dic['mnist_adv_snac_std_1']=(start-end)
+    # start=time.time()
+    # exp(coverage='snac',use_adv=False,std=1)
+    # end=time.time()
+    # dic['mnist_snac_std_1']=(start-end)
 
-    start=time.time()
-    exp(coverage='snac',use_adv=True,std=0)
-    end=time.time()
-    dic['mnist_adv_snac_std_0']=(start-end)
+    # start=time.time()
+    # exp(coverage='snac',use_adv=False,std=0)
+    # end=time.time()
+    # dic['mnist_snac_std_0']=(start-end)
+
+
+    # start=time.time()
+    # exp(coverage='snac',use_adv=True,std=0.5)
+    # end=time.time()
+    # dic['mnist_adv_snac_std_0.5']=(start-end)
+
+    # start=time.time()
+    # exp(coverage='snac',use_adv=True,std=1)
+    # end=time.time()
+    # dic['mnist_adv_snac_std_1']=(start-end)
+
+    # start=time.time()
+    # exp(coverage='snac',use_adv=True,std=0)
+    # end=time.time()
+    # dic['mnist_adv_snac_std_0']=(start-end)
 
     print(dic)
 

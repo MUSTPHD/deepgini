@@ -1,2 +1,4 @@
 vae_model/
 *.pyc
+model/
+*.csv

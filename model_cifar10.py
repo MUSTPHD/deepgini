@@ -24,8 +24,15 @@ import os
 import pandas as pd
 import tensorflow as tf
 
-os.environ["CUDA_VISIBLE_DEVICES"]="3,4"
-os.environ['TF_XLA_FLAGS'] = '--tf_xla_enable_xla_devices'
+
+
+physical_devices = tf.config.list_physical_devices('GPU') 
+print('-----', len(physical_devices))
+for device in physical_devices:
+    tf.config.experimental.set_memory_growth(device, True)
+    
+# os.environ["CUDA_VISIBLE_DEVICES"]="3,4"
+# os.environ['TF_XLA_FLAGS'] = '--tf_xla_enable_xla_devices'
 # Training parameters
 batch_size = 32  # orig paper trained all networks with batch_size=128
 epochs = 200

@@ -392,6 +392,14 @@ def deep_metric(pred_test_prob):
     rank_lst=np.argsort(metrics)
     return rank_lst
 
+
+def deep_L1(pred_test_prob):
+    _, D = pred_test_prob.shape
+     
+    metrics= np.sum(np.abs(1/D - pred_test_prob), axis=1)
+    rank_lst=np.argsort(metrics)
+    return rank_lst
+
 ## Surprise Adequacy
 
 ## LSA

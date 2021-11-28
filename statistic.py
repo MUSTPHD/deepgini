@@ -17,7 +17,7 @@ def apfd(right,sort):
 
 
 if __name__=='__main__':
-    lst=glob.glob('./output_cifar/*')
+    lst=glob.glob('./output_mnist/*')
     data_dict={}
     for i in lst:
         name=os.path.basename(i)[:-4]
