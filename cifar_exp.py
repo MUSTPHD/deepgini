@@ -9,9 +9,12 @@ import metrics
 import SVNH_DatasetUtil
 import time
 import os
-
-os.environ["CUDA_VISIBLE_DEVICES"]="2"
-
+import tensorflow as tf
+# os.environ["CUDA_VISIBLE_DEVICES"]="2"
+physical_devices = tf.config.list_physical_devices('GPU') 
+print('-----', len(physical_devices))
+for device in physical_devices:
+    tf.config.experimental.set_memory_growth(device, True)
 
 
 def gen_data(use_adv=True,deepxplore=False):
@@ -158,7 +161,21 @@ def exp_deep_metric(use_adv):
         dataset='cifar_adv'
     else:
         dataset='cifar'
-    #df.to_csv('./output_cifar/{}_deep_metric.csv'.format(dataset))
+    df.to_csv('./output_cifar/{}_deep_metric.csv'.format(dataset))
+
+def exp_deep_l1(use_adv):
+    input,layers,test,train,pred_test,true_test,pred_test_prob=gen_data(use_adv,deepxplore=False)
+    rank_lst=metrics.deep_L1(pred_test_prob)
+    df=pd.DataFrame([])
+    df['right']=(pred_test==true_test).astype('int')
+    df['cam']=0
+    df['cam'].loc[rank_lst]=list(range(1,len(rank_lst)+1))
+    df['rate']=0
+    if use_adv:
+        dataset='cifar_adv'
+    else:
+        dataset='cifar'
+    df.to_csv('./output_cifar/{}_deep_L1.csv'.format(dataset))
 
 if __name__=='__main__':
     dic={}
@@ -195,9 +212,14 @@ if __name__=='__main__':
     dic['mnist_ours']=(start-end)
 
     start=time.time()
-    exp_deep_metric(use_adv=True)
+    exp_deep_l1(use_adv=False)
     end=time.time()
-    dic['mnist_adv_ours']=(start-end)
+    dic['mnist_L1']=(start-end)
+
+    # start=time.time()
+    # exp_deep_metric(use_adv=True)
+    # end=time.time()
+    # dic['mnist_adv_ours']=(start-end)
 
     # start=time.time()
     # exp(coverage='tknc',use_adv=False,k=1)

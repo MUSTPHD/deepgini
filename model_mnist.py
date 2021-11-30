@@ -34,6 +34,8 @@ for device in physical_devices:
 # os.environ['TF_XLA_FLAGS'] = '--tf_xla_enable_xla_devices'
 
 def model_mnist():
+    model_file = 'model_mnist_no_strategy.hdf5'
+
     (X_train, Y_train), (X_test, Y_test) = mnist.load_data()  # 28*28
 
     X_train = X_train.astype('float32').reshape(-1,28,28,1)
@@ -76,9 +78,9 @@ def model_mnist():
 
     sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
     model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
-    checkpoint = ModelCheckpoint(filepath='./model/model_mnist.hdf5',monitor='val_accuracy',mode='auto',save_best_only=True, verbose=1)
+    checkpoint = ModelCheckpoint(filepath=f'./model/{model_file}',monitor='val_accuracy',mode='auto',save_best_only=True, verbose=1)
     model.fit(X_train, Y_train, batch_size=64, epochs=15, validation_data=(X_test, Y_test),callbacks=[checkpoint])
-    model=load_model('./model/model_mnist.hdf5')
+    model=load_model(f'./model/{model_file}')
     score=model.evaluate(X_test, Y_test, verbose=0)
     print(score)
 

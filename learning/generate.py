@@ -6,7 +6,7 @@ from tf_vae import CVAE, load_data
 import tensorflow as tf
 import tensorflow_probability as tfp
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '6'
+# os.environ['CUDA_VISIBLE_DEVICES'] = '6'
 
 
 def plot_latent_space(vae, n=30, figsize=15):
